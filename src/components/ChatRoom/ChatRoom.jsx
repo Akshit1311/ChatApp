@@ -10,8 +10,10 @@ import ChatMessage from "./ChatMessage";
 const ChatRoom = () => {
   const dummy = useRef();
 
-  const agentsRef = db.collection("agents");
-  const userRef = db.doc(`users/${auth.currentUser.uid}`);
+  const agentRef = db.doc(`agents/${auth.currentUser.uid}`);
+  // const [clientId, setClientId] = useState(agentRef.);
+
+  // const userRef = db.doc(`users/`);
 
   // const messagesRef = db.collection("messages");
   // const messagesRef = db
@@ -32,13 +34,14 @@ const ChatRoom = () => {
   useEffect(() => {
     messagesRef.onSnapshot((snap) => dummy.current.scrollIntoView());
 
-    userRef.set({
-      agent: "",
-      isClient: true,
+    agentRef.set({
+      name: auth.currentUser.displayName,
+      isClient: false,
       online: true,
+      client: null,
     });
 
-    userRef.onSnapshot((snap) =>
+    agentRef.onSnapshot((snap) =>
       console.log("userStatus", snap.data()?.status)
     );
 
@@ -52,9 +55,8 @@ const ChatRoom = () => {
   useEffect(() => {
     window.addEventListener("beforeunload", alertUser);
     return () => {
-      userRef.update({
-        agent: "",
-        isClient: true,
+      agentRef.update({
+        client: null,
         online: false,
       });
       window.removeEventListener("beforeunload", alertUser);
@@ -64,8 +66,9 @@ const ChatRoom = () => {
   const alertUser = (e) => {
     e.preventDefault();
     e.returnValue = "";
-    userRef.update({
+    agentRef.update({
       online: false,
+      client: null,
     });
   };
 
@@ -75,7 +78,7 @@ const ChatRoom = () => {
     const { uid, photoURL } = auth.currentUser;
 
     await messagesRef.add({
-      name: "Akshit",
+      name: auth.currentUser.displayName,
       text: formValue,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       uid,

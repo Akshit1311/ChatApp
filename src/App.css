@@ -147,3 +147,7 @@ img {
   border-radius: 50%;
   margin: 2px 5px;
 }
+
+.login h1 {
+  font-size: 3rem;
+}
