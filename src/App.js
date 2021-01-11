@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import "./App.css";
+import LscgLogo from "./assets/LscgLogo.png";
 
 // Firebase SDK
 
@@ -14,10 +15,40 @@ import ChatRoom from "./components/ChatRoom/ChatRoom";
 
 function App() {
   const [user] = useAuthState(auth);
+
+  const [togglerClass, setTogglerClass] = useState("");
+  const [isFinOpen, setIsFinOpen] = useState(false);
+  const [botClass, setBotClass] = useState("");
+
+  useEffect(() => {
+    auth.signInAnonymously();
+  }, []);
+
+  const handleToggle = () => {
+    // isFinOpen ? setTogglerClass("") : setTogglerClass("toggle-finnobot-active");
+    setIsFinOpen(!isFinOpen);
+
+    if (isFinOpen) {
+      setTogglerClass("");
+      setBotClass("");
+    } else {
+      setBotClass("finnobot-active");
+      setTogglerClass("toggle-finnobot-active");
+    }
+  };
+
   return (
-    <div className="App">
-      <section>{user ? <ChatRoom /> : <SignIn />}</section>
-    </div>
+    <>
+      <div className={`finnobot ${botClass}`}>
+        {user ? <ChatRoom handleToggle={handleToggle} /> : <SignIn />}
+      </div>
+      <button
+        className={`toggle-finnobot ${togglerClass}`}
+        onClick={handleToggle}
+      >
+        <img src={LscgLogo} alt="lscg-logo" />
+      </button>
+    </>
   );
 }
 

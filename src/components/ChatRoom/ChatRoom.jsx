@@ -6,8 +6,9 @@ import SignOut from "../Auth/SignOut";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import db, { auth } from "../../firebase";
 import ChatMessage from "./ChatMessage";
+import axios from "axios";
 
-const ChatRoom = () => {
+const ChatRoom = ({ handleToggle }) => {
   const dummy = useRef();
 
   const agentsRef = db.collection("agents");
@@ -19,15 +20,30 @@ const ChatRoom = () => {
   //   .doc(auth.currentUser.uid)
   //   .collection("messages");
 
+  //Data
+
   const messagesRef = db.collection(`users/${auth.currentUser.uid}/messages`);
 
-  const query = messagesRef.orderBy("createdAt").limit(50);
+  const query = messagesRef.orderBy("createdAt", "desc").limit(50);
 
   const [messages] = useCollectionData(query, { idField: "id" });
 
   const [formValue, setFormValue] = useState("");
 
   console.log({ auth });
+
+  const [activeAgent, setActiveAgent] = useState("");
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const data = await db.collection("agents").get();
+  //     setAgents(data.docs.map((agent) => agent.data()));
+
+  //     console.log("agents", agents);
+  //   };
+
+  //   fetchData();
+  // }, []);
 
   useEffect(() => {
     messagesRef.onSnapshot((snap) => dummy.current.scrollIntoView());
@@ -82,33 +98,84 @@ const ChatRoom = () => {
       photoURL: "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
     });
 
+    calcResponse(formValue);
+
     setFormValue("");
 
     dummy.current.scrollIntoView({ behaviour: "smooth" });
   };
 
-  return (
-    <>
-      <h1>ChatRoom</h1>
-      <div>
-        <SignOut />
+  const calcResponse = async (msg) => {
+    const options = {
+      method: "POST",
+      url: "/",
+      headers: { "Content-Type": "application/json" },
+      data: [msg],
+    };
+    const { data } = await axios.request(options);
+    console.log(data);
+    await messagesRef.add({
+      name: "Akshit",
+      text: data.reply,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      uid: "bot",
+      photoURL: "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
+    });
+  };
 
-        <main>
+  // calcResponse();
+
+  const assignAgent = async () => {
+    agentsRef
+      .where("online", "==", true)
+      .limit(1)
+      .onSnapshot((snap) => {
+        let agents = [];
+
+        snap.forEach((agent) => agents.push(agent.data().name));
+
+        console.log({ agents });
+        setActiveAgent(agents[0]);
+
+        // console.log("agentName", agent.data().name)
+      });
+    console.log({ activeAgent });
+  };
+
+  assignAgent();
+
+  return (
+    <div className="chatroom">
+      <h1>ChatRoom</h1>
+      <div>Active Agent : {activeAgent}</div>
+
+      <div className="chatroom__drop" onClick={handleToggle}>
+        <i className="fa fa-chevron-down"></i>
+      </div>
+      <div>
+        {/* <SignOut /> */}
+
+        <main className="chatroom__main">
           {messages &&
-            messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
+            messages
+              .reverse()
+              .map((msg) => <ChatMessage key={msg.id} message={msg} />)}
           <div ref={dummy}></div>
         </main>
 
-        <form onSubmit={sendMessage}>
+        <form onSubmit={sendMessage} className="chatroom__form">
           <input
             type="text"
+            className="chatroom__input"
             value={formValue}
             onChange={(e) => setFormValue(e.target.value)}
           />
-          <button type="submit">Enter</button>
+          <button type="submit" className="chatroom__button">
+            Enter
+          </button>
         </form>
       </div>
-    </>
+    </div>
   );
 };
 
