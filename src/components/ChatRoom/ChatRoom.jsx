@@ -30,10 +30,10 @@ const ChatRoom = ({ handleToggle }) => {
 
   const [formValue, setFormValue] = useState("");
 
-  console.log({ auth });
+  // console.log({ auth });
 
-  const [activeAgent, setActiveAgent] = useState("");
-
+  const [activeAgent, setActiveAgent] = useState(null);
+  const [activeAgentId, setActiveAgentId] = useState(null);
   // useEffect(() => {
   //   const fetchData = async () => {
   //     const data = await db.collection("agents").get();
@@ -131,11 +131,18 @@ const ChatRoom = ({ handleToggle }) => {
       .limit(1)
       .onSnapshot((snap) => {
         let agents = [];
+        let agentId = "";
 
-        snap.forEach((agent) => agents.push(agent.data().name));
+        snap.forEach((agent) => {
+          agents.push(agent.data().name);
+          agentId = agent.data().agentId;
+        });
 
-        console.log({ agents });
+        // console.log({ agents });
         setActiveAgent(agents[0]);
+        setActiveAgentId(agentId);
+
+        console.log({ activeAgentId });
 
         // console.log("agentName", agent.data().name)
       });
