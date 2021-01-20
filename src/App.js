@@ -40,7 +40,7 @@ function App() {
   return (
     <>
       <div className={`finnobot ${botClass}`}>
-        {user ? <ChatRoom handleToggle={handleToggle} /> : <SignIn />}
+        {user && <ChatRoom handleToggle={handleToggle} />}
       </div>
       <button
         className={`toggle-finnobot ${togglerClass}`}

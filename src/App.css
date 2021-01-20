@@ -23,12 +23,13 @@
   height: 60vh;
   background: var(--primary);
   width: 30vw;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   right: 0;
   transition: all ease-out 0.3s;
   transform: scale(0) translate(500px, 500px);
   border-radius: 2rem;
+  z-index: 9999;
 }
 
 .finnobot-active {
