@@ -8,7 +8,7 @@ import LscgLogo from "./assets/LscgLogo.png";
 // Firebase hooks
 import { useAuthState } from "react-firebase-hooks/auth";
 
-import { auth } from "./firebase";
+import  { auth } from "./firebase";
 
 import SignIn from "./components/Auth/SignIn";
 import ChatRoom from "./components/ChatRoom/ChatRoom";
@@ -22,6 +22,7 @@ function App() {
 
   useEffect(() => {
     auth.signInAnonymously();
+    
   }, []);
 
   const handleToggle = () => {
