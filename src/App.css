@@ -9,7 +9,7 @@
   border-radius: 50%;
   height: 100px;
   width: 100px;
-  position: absolute;
+  position: fixed;
   bottom: 3vh;
   right: 3vh;
   transition: 0.3s;
