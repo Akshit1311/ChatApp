@@ -8,6 +8,7 @@ import db, { auth } from "../../firebase";
 import ChatMessage from "./ChatMessage";
 import axios from "axios";
 import ChatForm from "./ChatForm/ChatForm";
+import MultiOption from "./MultiOption/MultiOption";
 
 const ChatRoom = ({ handleToggle }) => {
   const dummy = useRef();
@@ -21,6 +22,10 @@ const ChatRoom = ({ handleToggle }) => {
   const [connectedAgent, setConnectedAgent] = useState(null);
   const [connectedAgentId, setConnectedAgentId] = useState(null);
   const [connectedAgentImg, setConnectedAgentImg] = useState("");
+
+  //multi
+  const [isMultiOpen, setIsMultiOpen] = useState(false);
+  const [multOptions, setMultOptions] = useState([]);
 
   // Firebase
   const messagesRef = db.collection(`users/${auth.currentUser.uid}/messages`);
@@ -40,7 +45,7 @@ const ChatRoom = ({ handleToggle }) => {
 
   useEffect(() => {
     dummy.current.scrollIntoView();
-  });
+  }, [messages]);
 
   useEffect(() => {
     if (connectedAgent) {
@@ -94,6 +99,7 @@ const ChatRoom = ({ handleToggle }) => {
   }, []);
 
   const submitMessage = async (msg) => {
+    setIsMultiOpen(false);
     sendMessage(msg, auth.currentUser.displayName, auth.currentUser.uid);
 
     if (!connectedAgent) {
@@ -125,6 +131,13 @@ const ChatRoom = ({ handleToggle }) => {
     };
 
     const { data } = await axios.request(options);
+
+    console.log({ data });
+
+    if (data.is_multi === "true") {
+      setMultOptions(data.options);
+      setIsMultiOpen(true);
+    }
 
     return data;
   };
@@ -159,7 +172,7 @@ const ChatRoom = ({ handleToggle }) => {
 
   return (
     <div className="chatroom">
-      <h1>ChatRoom</h1>
+      <h1>Finnobot</h1>
       <div className="chatroom__agentinfo">
         <div>
           Connected :{" "}
@@ -209,6 +222,13 @@ const ChatRoom = ({ handleToggle }) => {
         <main className="chatroom__main">
           {messages &&
             messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
+
+          {isMultiOpen && (
+            <MultiOption
+              submitMessage={submitMessage}
+              multOptions={multOptions}
+            />
+          )}
           <span ref={dummy}></span>
         </main>
 

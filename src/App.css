@@ -46,7 +46,7 @@
 
 .chatroom__main {
   overflow-y: scroll;
-  height: 50vh;
+  height: 60vh;
   background: #282c34;
 
   /* background-repeat: repeat; */
@@ -198,4 +198,24 @@
     color: transparent;
     background-clip: text;
   }
+}
+
+.multoptions {
+  margin: 0 3rem;
+  margin-bottom: 2rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.multoptions__option {
+  background: white;
+  color: black;
+  padding: 1rem 2rem;
+  text-align: center;
+  border-bottom: 1px solid gray;
+}
+
+.multoptions__option:hover {
+  opacity: 0.9;
+  cursor: pointer;
 }
