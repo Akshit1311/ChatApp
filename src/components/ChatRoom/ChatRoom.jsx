@@ -17,8 +17,10 @@ const ChatRoom = ({ handleToggle }) => {
   const [formValue, setFormValue] = useState("");
   const [availAgent, setAvailAgent] = useState(null);
   const [availAgentId, setAvailAgentId] = useState(null);
+  const [availAgentImgs, setAvailAgentImgs] = useState([]);
   const [connectedAgent, setConnectedAgent] = useState(null);
   const [connectedAgentId, setConnectedAgentId] = useState(null);
+  const [connectedAgentImg, setConnectedAgentImg] = useState("");
 
   // Firebase
   const messagesRef = db.collection(`users/${auth.currentUser.uid}/messages`);
@@ -71,15 +73,18 @@ const ChatRoom = ({ handleToggle }) => {
       .onSnapshot((snap) => {
         let agents = [];
         let agentId = "";
+        let agentImgs = [];
 
         snap.forEach((agent) => {
           agents.push(agent.data().name);
           agentId = agent.data().agentId;
+          agentImgs.push(agent.data().imgURL);
         });
 
         console.log({ agents });
         setAvailAgent(agents[0]);
         setAvailAgentId(agentId);
+        setAvailAgentImgs(agentImgs);
 
         // console.log({ activeAgentId });
 
@@ -145,6 +150,7 @@ const ChatRoom = ({ handleToggle }) => {
     const agentRef = db.doc(`agents/${availAgentId}`);
     setConnectedAgentId(availAgentId);
     setConnectedAgent(availAgent);
+    setConnectedAgentImg(availAgentImgs[0]);
 
     agentRef.update({
       activeClient:
@@ -159,8 +165,43 @@ const ChatRoom = ({ handleToggle }) => {
     <div className="chatroom">
       <h1>ChatRoom</h1>
       <div className="chatroom__agentinfo">
-        <div>Connected : {connectedAgent ?? "No agents connected"} </div>
-        <div>Available : {availAgent ?? "No agents available"} </div>
+        <div>
+          Connected :{" "}
+          {connectedAgent ? (
+            <img
+              src={connectedAgentImg}
+              alt="avail-agent"
+              className="agent__avatar"
+            />
+          ) : (
+            <>
+              <i className="fa fa-user" />
+              <i className="fa fa-times" />
+            </>
+          )}
+        </div>
+        <div>
+          Available :{" "}
+          {availAgent ? (
+            availAgentImgs
+              .reverse()
+              .map(
+                (img, i) =>
+                  i < 3 && (
+                    <img
+                      src={img}
+                      alt="avail-agent"
+                      className="agent__avatar"
+                    />
+                  )
+              )
+          ) : (
+            <>
+              <i className="fa fa-user" />
+              <i className="fa fa-times" />
+            </>
+          )}{" "}
+        </div>
       </div>
 
       <div className="chatroom__drop" onClick={handleToggle}>
