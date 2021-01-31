@@ -149,7 +149,7 @@ const ChatRoom = ({ handleToggle }) => {
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       uid: senderId ?? "bot",
       photoURL: senderId
-        ? "https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/21760012/original/d4c0c142f91f012c9a8a9c9aeef3bac28036f15b/create-your-cartoon-style-flat-avatar-or-icon.jpg"
+        ? "https://www.freepngimg.com/thumb/facebook/62681-flat-icons-face-computer-design-avatar-icon.png"
         : "https://i.pinimg.com/originals/08/e7/ec/08e7ec0f84233b37ac26e920bc60ec57.gif",
       isAgent: isAgent || false,
     });
@@ -184,8 +184,7 @@ const ChatRoom = ({ handleToggle }) => {
             />
           ) : (
             <>
-              <i className="fa fa-user" />
-              <i className="fa fa-times" />
+              <i className="fa fa-user-times" />
             </>
           )}
         </div>
@@ -206,11 +205,14 @@ const ChatRoom = ({ handleToggle }) => {
               )
           ) : (
             <>
-              <i className="fa fa-user" />
-              <i className="fa fa-times" />
+              <i className="fa fa-user-times" />
             </>
           )}{" "}
         </div>
+      </div>
+
+      <div className="finn__logout" onClick={() => auth.signOut()}>
+        <i className="fa fa-sign-out" aria-hidden="true"></i>
       </div>
 
       <div className="chatroom__drop" onClick={handleToggle}>

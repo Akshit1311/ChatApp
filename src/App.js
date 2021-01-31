@@ -8,7 +8,7 @@ import LscgLogo from "./assets/LscgLogo.png";
 // Firebase hooks
 import { useAuthState } from "react-firebase-hooks/auth";
 
-import  { auth } from "./firebase";
+import { auth } from "./firebase";
 
 import SignIn from "./components/Auth/SignIn";
 import ChatRoom from "./components/ChatRoom/ChatRoom";
@@ -21,8 +21,7 @@ function App() {
   const [botClass, setBotClass] = useState("");
 
   useEffect(() => {
-    auth.signInAnonymously();
-    
+    // auth.signInAnonymously();
   }, []);
 
   const handleToggle = () => {
@@ -41,7 +40,11 @@ function App() {
   return (
     <>
       <div className={`finnobot ${botClass}`}>
-        {user && <ChatRoom handleToggle={handleToggle} />}
+        {user ? (
+          <ChatRoom handleToggle={handleToggle} />
+        ) : (
+          <SignIn handleToggle={handleToggle} />
+        )}
       </div>
       <button
         className={`toggle-finnobot ${togglerClass}`}
