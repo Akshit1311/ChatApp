@@ -165,3 +165,37 @@
   border-radius: 50%;
   margin: 0 0.25rem;
 }
+
+.chatroom__form .fa {
+  margin: 0 1rem;
+  cursor: pointer;
+  background-size: 2px;
+}
+
+.chatroom__input {
+  overflow: hidden;
+}
+
+.mic-enabled {
+  animation: 1s micAnim infinite;
+  transform: scale(1.3);
+}
+
+@keyframes micAnim {
+  0% {
+    background: linear-gradient(white, rgb(2, 204, 2) 20%);
+    color: transparent;
+    background-clip: text;
+  }
+  40% {
+    background: linear-gradient(white, rgb(2, 204, 2) 100%);
+    color: transparent;
+    background-clip: text;
+  }
+
+  100% {
+    background: linear-gradient(white, rgb(2, 204, 2) 40%);
+    color: transparent;
+    background-clip: text;
+  }
+}

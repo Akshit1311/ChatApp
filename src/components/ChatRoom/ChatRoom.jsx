@@ -7,6 +7,7 @@ import { useCollectionData } from "react-firebase-hooks/firestore";
 import db, { auth } from "../../firebase";
 import ChatMessage from "./ChatMessage";
 import axios from "axios";
+import ChatForm from "./ChatForm/ChatForm";
 
 const ChatRoom = ({ handleToggle }) => {
   const dummy = useRef();
@@ -14,7 +15,6 @@ const ChatRoom = ({ handleToggle }) => {
   // const [messages, setMessages] = useState([]);
 
   // State
-  const [formValue, setFormValue] = useState("");
   const [availAgent, setAvailAgent] = useState(null);
   const [availAgentId, setAvailAgentId] = useState(null);
   const [availAgentImgs, setAvailAgentImgs] = useState([]);
@@ -93,11 +93,7 @@ const ChatRoom = ({ handleToggle }) => {
     // console.log({ activeAgent });
   }, []);
 
-  const submitMessage = async (e) => {
-    e.preventDefault();
-    const msg = formValue;
-    setFormValue("");
-
+  const submitMessage = async (msg) => {
     sendMessage(msg, auth.currentUser.displayName, auth.currentUser.uid);
 
     if (!connectedAgent) {
@@ -216,17 +212,19 @@ const ChatRoom = ({ handleToggle }) => {
           <span ref={dummy}></span>
         </main>
 
-        <form onSubmit={submitMessage} className="chatroom__form">
+        {/* <form onSubmit={submitMessage} className="chatroom__form">
           <input
             type="text"
             className="chatroom__input"
             value={formValue}
             onChange={(e) => setFormValue(e.target.value)}
           />
+
           <button type="submit" className="chatroom__button">
             Enter
           </button>
-        </form>
+        </form> */}
+        <ChatForm submitMessage={submitMessage} />
       </div>
     </div>
   );
