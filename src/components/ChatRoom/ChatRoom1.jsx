@@ -50,6 +50,7 @@ const ChatRoom = ({ handleToggle }) => {
       agent: "",
       isClient: true,
       online: true,
+      email: auth.currentUser.email,
     });
 
     userRef.onSnapshot((snap) =>

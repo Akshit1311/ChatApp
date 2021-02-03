@@ -35,6 +35,7 @@ const ChatRoom = ({ handleToggle }) => {
   messagesRef.onSnapshot((snap) => dummy.current?.scrollIntoView());
 
   const agentsRef = db.collection("agents");
+  const userRef = db.doc(`users/${auth.currentUser.uid}`);
 
   // connectedAgentId &&
   //   db.doc(`agents/${connectedAgentId}`).onSnapshot((snap) => {
@@ -45,6 +46,12 @@ const ChatRoom = ({ handleToggle }) => {
 
   useEffect(() => {
     dummy.current.scrollIntoView();
+    userRef.set({
+      agent: "",
+      isClient: true,
+      online: true,
+      email: auth.currentUser.email || null,
+    });
   }, [messages]);
 
   useEffect(() => {
@@ -97,6 +104,28 @@ const ChatRoom = ({ handleToggle }) => {
       });
     // console.log({ activeAgent });
   }, []);
+
+  //Make User Offline Before Leaving Page
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", alertUser);
+    return () => {
+      userRef.update({
+        agent: "",
+        online: false,
+      });
+      window.removeEventListener("beforeunload", alertUser);
+    };
+  }, []);
+
+  const alertUser = (e) => {
+    e.preventDefault();
+    e.returnValue = "";
+    userRef.update({
+      online: false,
+      agent: "",
+    });
+  };
 
   const submitMessage = async (msg) => {
     setIsMultiOpen(false);
@@ -200,6 +229,7 @@ const ChatRoom = ({ handleToggle }) => {
                       src={img}
                       alt="avail-agent"
                       className="agent__avatar"
+                      key={i}
                     />
                   )
               )
