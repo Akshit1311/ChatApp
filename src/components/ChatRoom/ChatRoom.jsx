@@ -51,6 +51,10 @@ const ChatRoom = ({ handleToggle }) => {
       isClient: true,
       online: true,
       email: auth.currentUser.email || null,
+      name: auth.currentUser.displayName || "anonymous",
+      imgURL:
+        auth.currentUser.photoURL ||
+        "https://www.freepngimg.com/thumb/facebook/62681-flat-icons-face-computer-design-avatar-icon.png",
     });
   }, [messages]);
 
