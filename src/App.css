@@ -9,7 +9,7 @@
   border-radius: 50%;
   height: 100px;
   width: 100px;
-  position: absolute;
+  position: fixed;
   bottom: 3vh;
   right: 3vh;
   transition: 0.3s;
@@ -23,7 +23,7 @@
   height: 60vh;
   background: var(--primary);
   width: 30vw;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   right: 0;
   transition: all ease-out 0.3s;
