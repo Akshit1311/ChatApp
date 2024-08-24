@@ -11,143 +11,198 @@ import axios from "axios";
 const ChatRoom = ({ handleToggle }) => {
   const dummy = useRef();
 
-  const agentsRef = db.collection("agents");
-  const userRef = db.doc(`users/${auth.currentUser.uid}`);
+  // const [messages, setMessages] = useState([]);
 
-  // const messagesRef = db.collection("messages");
-  // const messagesRef = db
-  //   .collection("users")
-  //   .doc(auth.currentUser.uid)
-  //   .collection("messages");
+  // State
+  const [formValue, setFormValue] = useState("");
+  const [availAgent, setAvailAgent] = useState(null);
+  const [availAgentId, setAvailAgentId] = useState(null);
+  const [availAgentImgs, setAvailAgentImgs] = useState([]);
+  const [connectedAgent, setConnectedAgent] = useState(null);
+  const [connectedAgentId, setConnectedAgentId] = useState(null);
+  const [connectedAgentImg, setConnectedAgentImg] = useState("");
 
-  //Data
-
+  // Firebase
   const messagesRef = db.collection(`users/${auth.currentUser.uid}/messages`);
-
-  const query = messagesRef.orderBy("createdAt", "desc").limit(50);
-
+  const query = messagesRef.orderBy("createdAt", "asc").limit(1000);
   const [messages] = useCollectionData(query, { idField: "id" });
 
-  const [formValue, setFormValue] = useState("");
+  messagesRef.onSnapshot((snap) => dummy.current?.scrollIntoView());
 
-  console.log({ auth });
+  const agentsRef = db.collection("agents");
 
-  const [activeAgent, setActiveAgent] = useState("");
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const data = await db.collection("agents").get();
-  //     setAgents(data.docs.map((agent) => agent.data()));
-
-  //     console.log("agents", agents);
-  //   };
-
-  //   fetchData();
-  // }, []);
+  // connectedAgentId &&
+  //   db.doc(`agents/${connectedAgentId}`).onSnapshot((snap) => {
+  //     if (!snap.data().online) {
+  //       setConnectedAgent(null);
+  //     }
+  //   });
 
   useEffect(() => {
-    messagesRef.onSnapshot((snap) => dummy.current.scrollIntoView());
-
-    userRef.set({
-      agent: "",
-      isClient: true,
-      online: true,
-    });
-
-    userRef.onSnapshot((snap) =>
-      console.log("userStatus", snap.data()?.status)
-    );
-
-    // db.collection("agents").onSnapshot((snap) =>
-    //   snap.docs.map((doc) => {
-    //     console.log(doc.data());
-    //   })
-    // );
-  }, []);
+    dummy.current.scrollIntoView();
+  });
 
   useEffect(() => {
-    window.addEventListener("beforeunload", alertUser);
-    return () => {
-      userRef.update({
-        agent: "",
-        isClient: true,
-        online: false,
+    if (connectedAgent) {
+      const agentRef = db.doc(`agents/${connectedAgentId}`);
+      agentRef.onSnapshot((snap) => {
+        console.log(snap.data());
+        if (!snap.data().online) {
+          setConnectedAgent(null);
+          setConnectedAgentId(null);
+        }
       });
-      window.removeEventListener("beforeunload", alertUser);
-    };
+    }
+  });
+
+  const didMountRef = useRef(false);
+  useEffect(() => {
+    if (didMountRef.current) {
+      if (!connectedAgent) {
+        sendMessage("Agent has left the chat.", "bot", null, true);
+      }
+    } else didMountRef.current = true;
+  }, [connectedAgent]);
+
+  //Listen for active agents
+  useEffect(() => {
+    agentsRef
+      .where("online", "==", true)
+      .where("activeClientId", "==", null)
+      .limit(1)
+      .onSnapshot((snap) => {
+        let agents = [];
+        let agentId = "";
+        let agentImgs = [];
+
+        snap.forEach((agent) => {
+          agents.push(agent.data().name);
+          agentId = agent.data().agentId;
+          agentImgs.push(agent.data().imgURL);
+        });
+
+        console.log({ agents });
+        setAvailAgent(agents[0]);
+        setAvailAgentId(agentId);
+        setAvailAgentImgs(agentImgs);
+
+        // console.log({ activeAgentId });
+
+        // console.log("agentName", agent.data().name)
+      });
+    // console.log({ activeAgent });
   }, []);
 
-  const alertUser = (e) => {
+  const submitMessage = async (e) => {
     e.preventDefault();
-    e.returnValue = "";
-    userRef.update({
-      online: false,
-    });
-  };
-
-  const sendMessage = async (e) => {
-    e.preventDefault();
-
-    const { uid, photoURL } = auth.currentUser;
-
-    await messagesRef.add({
-      name: "Akshit",
-      text: formValue,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      uid,
-      photoURL: "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
-    });
-
-    calcResponse(formValue);
-
+    const msg = formValue;
     setFormValue("");
 
-    dummy.current.scrollIntoView({ behaviour: "smooth" });
+    sendMessage(msg, auth.currentUser.displayName, auth.currentUser.uid);
+
+    if (!connectedAgent) {
+      const res = await calcResponse(msg);
+
+      console.log({ res });
+
+      sendMessage(res.reply, "bot", null, true);
+
+      if (res.tag === "true") {
+        console.log("agent requested");
+        if (availAgent) assignAgent();
+        else sendMessage("No agent available", "bot", null, true);
+      }
+    }
   };
 
   const calcResponse = async (msg) => {
     const options = {
       method: "POST",
-      url: "/",
-      headers: { "Content-Type": "application/json" },
+      url:
+        "https://cors-anywhere.herokuapp.com/https://chatback.londonscg.co.uk/",
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
+      },
       data: [msg],
     };
+
     const { data } = await axios.request(options);
-    console.log(data);
+
+    return data;
+  };
+
+  const sendMessage = async (msg, sender, senderId, isAgent) => {
     await messagesRef.add({
-      name: "Akshit",
-      text: data.reply,
+      name: sender,
+      text: msg,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      uid: "bot",
-      photoURL: "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
+      uid: senderId ?? "bot",
+      photoURL: senderId
+        ? "https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/21760012/original/d4c0c142f91f012c9a8a9c9aeef3bac28036f15b/create-your-cartoon-style-flat-avatar-or-icon.jpg"
+        : "https://i.pinimg.com/originals/08/e7/ec/08e7ec0f84233b37ac26e920bc60ec57.gif",
+      isAgent: isAgent || false,
     });
   };
 
-  // calcResponse();
+  const assignAgent = () => {
+    const agentRef = db.doc(`agents/${availAgentId}`);
+    setConnectedAgentId(availAgentId);
+    setConnectedAgent(availAgent);
+    setConnectedAgentImg(availAgentImgs[0]);
 
-  const assignAgent = async () => {
-    agentsRef
-      .where("online", "==", true)
-      .limit(1)
-      .onSnapshot((snap) => {
-        let agents = [];
+    agentRef.update({
+      activeClient:
+        auth.currentUser.displayName ?? `User${auth.currentUser.uid}`,
+      activeClientId: auth.currentUser.uid,
+    });
 
-        snap.forEach((agent) => agents.push(agent.data().name));
-
-        console.log({ agents });
-        setActiveAgent(agents[0]);
-
-        // console.log("agentName", agent.data().name)
-      });
-    console.log({ activeAgent });
+    sendMessage(`${availAgent} (Agent) has joined the chat`, "bot", null, true);
   };
-
-  assignAgent();
 
   return (
     <div className="chatroom">
       <h1>ChatRoom</h1>
-      <div>Active Agent : {activeAgent}</div>
+      <div className="chatroom__agentinfo">
+        <div>
+          Connected :{" "}
+          {connectedAgent ? (
+            <img
+              src={connectedAgentImg}
+              alt="avail-agent"
+              className="agent__avatar"
+            />
+          ) : (
+            <>
+              <i className="fa fa-user" />
+              <i className="fa fa-times" />
+            </>
+          )}
+        </div>
+        <div>
+          Available :{" "}
+          {availAgent ? (
+            availAgentImgs
+              .reverse()
+              .map(
+                (img, i) =>
+                  i < 3 && (
+                    <img
+                      src={img}
+                      alt="avail-agent"
+                      className="agent__avatar"
+                    />
+                  )
+              )
+          ) : (
+            <>
+              <i className="fa fa-user" />
+              <i className="fa fa-times" />
+            </>
+          )}{" "}
+        </div>
+      </div>
 
       <div className="chatroom__drop" onClick={handleToggle}>
         <i className="fa fa-chevron-down"></i>
@@ -157,13 +212,11 @@ const ChatRoom = ({ handleToggle }) => {
 
         <main className="chatroom__main">
           {messages &&
-            messages
-              .reverse()
-              .map((msg) => <ChatMessage key={msg.id} message={msg} />)}
-          <div ref={dummy}></div>
+            messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
+          <span ref={dummy}></span>
         </main>
 
-        <form onSubmit={sendMessage} className="chatroom__form">
+        <form onSubmit={submitMessage} className="chatroom__form">
           <input
             type="text"
             className="chatroom__input"

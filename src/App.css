@@ -9,7 +9,7 @@
   border-radius: 50%;
   height: 100px;
   width: 100px;
-  position: fixed;
+  position: absolute;
   bottom: 3vh;
   right: 3vh;
   transition: 0.3s;
@@ -20,7 +20,6 @@
 }
 
 .finnobot {
-  height: 60vh;
   background: var(--primary);
   width: 30vw;
   position: fixed;
@@ -29,13 +28,14 @@
   transition: all ease-out 0.3s;
   transform: scale(0) translate(500px, 500px);
   border-radius: 2rem;
+  z-index: 9999;
 }
 
 .finnobot-active {
   transition: 0.4s;
   transform: scale(1);
-  bottom: 10vh;
-  right: 10vh;
+  bottom: 5vh;
+  right: 5vh;
 }
 
 .message img {
@@ -106,6 +106,10 @@
   padding: 1rem 1rem;
 }
 
+.message img {
+  object-fit: cover;
+}
+
 .message p {
   padding: 1rem 2rem;
   box-shadow: 1px 1px 30px 1px rgba(0, 0, 0, 0.459);
@@ -136,4 +140,28 @@
   margin-left: 10px;
   background: #f8f8f8;
   color: black;
+}
+
+.chatroom__agentinfo {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.chatroom__agentinfo .fa {
+  color: red;
+  margin: 0 0.25rem;
+}
+
+.chatroom__agentinfo > div {
+  display: flex;
+  align-items: center;
+}
+
+.agent__avatar {
+  height: 3vh;
+  width: 3vh;
+  object-fit: cover;
+  border-radius: 50%;
+  margin: 0 0.25rem;
 }
